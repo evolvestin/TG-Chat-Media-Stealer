@@ -1,4 +1,6 @@
 import os
+import random
+import string
 import objects
 from objects import time_now, GoogleDrive
 from telethon.sync import TelegramClient, events
@@ -35,8 +37,16 @@ def start(stamp):
             async def response_user_update(response):
                 chat_id = response.message.peer_id.channel_id
                 chat_id = chat_id if '-100' in str(chat_id) else int(f'-100{chat_id}')
-                if response.message and response.message.media:
-                    await client.send_message(chats.get(chat_id), response.message)
+                if all(key is None for key in [response.message.sticker, response.message.dice]):
+                    try:
+                        file_name = ''.join(random.sample(string.ascii_letters, 10))
+                        path = await client.download_media(response.message.media, file_name)
+                        await client.send_file(chats.get(chat_id), path,
+                                               caption=response.message.message,
+                                               formatting_entities=response.message.entities)
+                        os.remove(path)
+                    except IndexError and Exception:
+                        Auth.dev.executive(None)
             Auth.dev.printer(f"Сессия в работе: {os.environ['session']}")
             client.run_until_disconnected()
     except IndexError and Exception:
