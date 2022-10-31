@@ -37,7 +37,8 @@ def start(stamp):
             async def response_user_update(response):
                 chat_id = response.message.peer_id.channel_id
                 chat_id = chat_id if '-100' in str(chat_id) else int(f'-100{chat_id}')
-                if all(key is None for key in [response.message.sticker, response.message.dice]):
+                if response.message and response.message.media and \
+                        all(key is None for key in [response.message.sticker, response.message.dice]):
                     try:
                         file_name = ''.join(random.sample(string.ascii_letters, 10))
                         path = await client.download_media(response.message.media, file_name)
