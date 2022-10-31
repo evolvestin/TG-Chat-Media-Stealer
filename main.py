@@ -42,10 +42,11 @@ def start(stamp):
                     try:
                         file_name = ''.join(random.sample(string.ascii_letters, 10))
                         path = await client.download_media(response.message.media, file_name)
-                        await client.send_file(chats.get(chat_id), path,
-                                               caption=response.message.message,
-                                               formatting_entities=response.message.entities)
-                        os.remove(path)
+                        if path:
+                            await client.send_file(chats.get(chat_id), path,
+                                                   caption=response.message.message,
+                                                   formatting_entities=response.message.entities)
+                            os.remove(path)
                     except IndexError and Exception:
                         Auth.dev.executive(None)
             Auth.dev.printer(f"Сессия в работе: {os.environ['session']}")
