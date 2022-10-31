@@ -4,7 +4,7 @@ from objects import time_now, GoogleDrive
 from telethon.sync import TelegramClient, events
 # =================================================================================================================
 stamp1 = time_now()
-Auth, chats = objects.AuthCentre(ID_DEV=os.environ['ID_DEV'], TOKEN=os.environ['TOKEN']), eval(os.environ['chat'])
+Auth, chats = objects.AuthCentre(ID_DEV=os.environ['ID_DEV'], TOKEN=os.environ['DEV_TOKEN']), eval(os.environ['chat'])
 
 
 def sessions_creation():
