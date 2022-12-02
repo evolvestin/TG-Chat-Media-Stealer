@@ -39,21 +39,31 @@ def start(stamp):
                 chat_id = chat_id if '-100' in str(chat_id) else int(f'-100{chat_id}')
                 if response.message and response.message.media and \
                         all(key is None for key in [response.message.sticker, response.message.dice]):
+                    path, file_name = None, ''.join(random.sample(string.ascii_letters, 10))
+
                     try:
-                        file_name = ''.join(random.sample(string.ascii_letters, 10))
                         path = await client.download_media(response.message.media, file_name)
-                        if path:
-                            await client.send_file(chats.get(chat_id), path,
-                                                   caption=response.message.message,
-                                                   formatting_entities=response.message.entities)
-                            os.remove(path)
                     except IndexError and Exception:
                         Auth.dev.executive(None)
+
+                    if path:
+                        try:
+                            caption = response.message.message[:1024] if response.message.message else None
+                            await client.send_file(chats.get(chat_id), path, caption=caption,
+                                                   formatting_entities=response.message.entities)
+                        except IndexError and Exception as error:
+                            if 'The caption is too long' not in str(error):
+                                Auth.dev.executive(None)
+
+                        try:
+                            os.remove(file_name)
+                        except IndexError and Exception:
+                            Auth.dev.executive(None)
             Auth.dev.printer(f"Сессия в работе: {os.environ['session']}")
             client.run_until_disconnected()
     except IndexError and Exception:
         Auth.dev.thread_except()
 
 
-if __name__ == '__main__' and os.environ.get('local'):
+if __name__ == '__main__':
     start(stamp1)
