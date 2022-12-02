@@ -56,7 +56,7 @@ def start(stamp):
                                 Auth.dev.executive(None)
 
                         try:
-                            os.remove(file_name)
+                            os.remove(path)
                         except IndexError and Exception:
                             Auth.dev.executive(None)
             Auth.dev.printer(f"Сессия в работе: {os.environ['session']}")
