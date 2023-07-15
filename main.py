@@ -49,8 +49,9 @@ def start(stamp):
                     if path:
                         try:
                             caption = response.message.message[:1024] if response.message.message else None
+
                             await client.send_file(chats.get(chat_id), path, caption=caption,
-                                                   formatting_entities=response.message.entities)
+                                                   formatting_entities=response.message.entities, nosound_video=False)
                         except IndexError and Exception as error:
                             if 'The caption is too long' not in str(error):
                                 Auth.dev.executive(None)
