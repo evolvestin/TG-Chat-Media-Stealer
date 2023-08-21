@@ -2,35 +2,16 @@ import os
 import random
 import string
 import objects
-from objects import time_now, GoogleDrive
+import _thread
+from time import sleep
 from telethon.sync import TelegramClient, events
-# =================================================================================================================
-stamp1 = time_now()
-chats = eval(os.environ['chats'])
-Auth = objects.AuthCentre(ID_DEV=os.environ['ID_DEV'], TOKEN=os.environ['DEV_TOKEN'])
+from objects import time_now, AuthCentre, GoogleDrive
+# =====================================================================================================================
 
 
-def sessions_creation():
-    objects.environmental_files()
-    drive_client = GoogleDrive('google.json')
-    for file in drive_client.files():
-        user_session = f"{os.environ['session']}.session"
-        if file['name'] == user_session:
-            drive_client.download_file(file['id'], f'{user_session}')
-            Auth.dev.printer(f'Скачали сессию Telegram: {user_session}')
-
-
-sessions_creation()
-# =================================================================================================================
-
-
-def start(stamp):
+def client_init(auth: AuthCentre, chats: dict):
     try:
-        if os.environ.get('local'):
-            Auth.dev.printer(f'Запуск скрипта локально за {time_now() - stamp} сек.')
-        else:
-            Auth.dev.start(stamp1)
-            Auth.dev.printer(f'Скрипт запущен за {time_now() - stamp} сек.')
+        auth.dev.printer(f"Инициализация {os.environ['session']}")
         client = TelegramClient(os.environ['session'], int(os.environ['api_id']), os.environ['api_hash']).start()
         with client:
             @client.on(events.NewMessage(chats=list(chats.keys())))
@@ -44,7 +25,7 @@ def start(stamp):
                     try:
                         path = await client.download_media(response.message.media, file_name)
                     except IndexError and Exception:
-                        Auth.dev.executive(None)
+                        auth.dev.executive(None)
 
                     if path:
                         try:
@@ -54,17 +35,40 @@ def start(stamp):
                                                    formatting_entities=response.message.entities, nosound_video=False)
                         except IndexError and Exception as error:
                             if 'The caption is too long' not in str(error):
-                                Auth.dev.executive(None)
-
+                                auth.dev.executive(None)
                         try:
                             os.remove(path)
                         except IndexError and Exception:
-                            Auth.dev.executive(None)
-            Auth.dev.printer(f"Сессия в работе: {os.environ['session']}")
+                            auth.dev.executive(None)
+            auth.dev.printer(f"Сессия в работе: {os.environ['session']}")
             client.run_until_disconnected()
     except IndexError and Exception:
-        Auth.dev.thread_except()
+        auth.dev.thread_except()
+        _thread.start_new_thread(client_init, (auth, chats))
+
+
+def start(stamp: int = time_now()):
+    objects.environmental_files()
+    chats: dict = eval(os.environ['chats'])
+    drive_client = GoogleDrive('google.json')
+    auth = objects.AuthCentre(ID_DEV=os.environ['ID_DEV'], TOKEN=os.environ['DEV_TOKEN'])
+
+    for file in drive_client.files():
+        user_session = f"{os.environ['session']}.session"
+        if file['name'] == user_session:
+            drive_client.download_file(file['id'], f'{user_session}')
+            auth.dev.printer(f'Скачали сессию Telegram: {user_session}')
+
+    if os.environ.get('local'):
+        auth.dev.printer(f'Запуск скрипта локально за {time_now() - stamp} сек.')
+    else:
+        auth.dev.start(stamp)
+        auth.dev.printer(f'Скрипт запущен за {time_now() - stamp} сек.')
+
+    _thread.start_new_thread(client_init, (auth, chats))
+    while True:
+        sleep(24 * 60 * 60)
 
 
 if __name__ == '__main__':
-    start(stamp1)
+    start()
