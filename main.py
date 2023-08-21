@@ -1,6 +1,7 @@
 import os
 import random
 import string
+import asyncio
 import objects
 import _thread
 from time import sleep
@@ -11,6 +12,7 @@ from objects import time_now, AuthCentre, GoogleDrive
 
 def client_init(auth: AuthCentre, chats: dict):
     try:
+        asyncio.set_event_loop(asyncio.new_event_loop())
         auth.dev.printer(f"Инициализация {os.environ['session']}")
         client = TelegramClient(os.environ['session'], int(os.environ['api_id']), os.environ['api_hash']).start()
         with client:
