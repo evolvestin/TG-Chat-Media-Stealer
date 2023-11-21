@@ -50,10 +50,10 @@ def client_init(auth: AuthCentre, chats: dict):
                             error_handler(auth)
             auth.dev.printer(f"Сессия в работе: {os.environ['session']}")
             client.run_until_disconnected()
-    except IndexError and Exception:
+    except IndexError and Exception as raw_error:
         try:
             auth.dev.thread_except()
-        except IndexError and Exception as raw_error:
+        except IndexError and Exception:
             auth.dev.printer(f'Не удалось отправить ошибку ({raw_error}). Стартуем заново client_init()')
         _thread.start_new_thread(client_init, (auth, chats))
 
