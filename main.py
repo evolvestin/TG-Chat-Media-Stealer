@@ -10,6 +10,13 @@ from objects import time_now, AuthCentre, GoogleDrive
 # =====================================================================================================================
 
 
+def error_handler(auth: AuthCentre) -> None:
+    try:
+        auth.dev.executive(None)
+    except IndexError and Exception:
+        pass
+
+
 def client_init(auth: AuthCentre, chats: dict):
     try:
         asyncio.set_event_loop(asyncio.new_event_loop())
@@ -27,8 +34,7 @@ def client_init(auth: AuthCentre, chats: dict):
                     try:
                         path = await client.download_media(response.message.media, file_name)
                     except IndexError and Exception:
-                        auth.dev.executive(None)
-
+                        error_handler(auth)
                     if path:
                         try:
                             caption = response.message.message[:1024] if response.message.message else None
@@ -37,18 +43,18 @@ def client_init(auth: AuthCentre, chats: dict):
                                                    formatting_entities=response.message.entities, nosound_video=False)
                         except IndexError and Exception as error:
                             if 'The caption is too long' not in str(error):
-                                auth.dev.executive(None)
+                                error_handler(auth)
                         try:
                             os.remove(path)
                         except IndexError and Exception:
-                            auth.dev.executive(None)
+                            error_handler(auth)
             auth.dev.printer(f"Сессия в работе: {os.environ['session']}")
             client.run_until_disconnected()
     except IndexError and Exception:
         try:
             auth.dev.thread_except()
-        except IndexError and Exception as error:
-            auth.dev.printer(f'Не удалось отправить ошибку ({error}). Стартуем заново client_init()')
+        except IndexError and Exception as raw_error:
+            auth.dev.printer(f'Не удалось отправить ошибку ({raw_error}). Стартуем заново client_init()')
         _thread.start_new_thread(client_init, (auth, chats))
 
 
